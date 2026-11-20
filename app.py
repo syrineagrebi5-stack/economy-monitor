@@ -650,37 +650,31 @@ else:
 
 st.divider()
 
+
 with st.expander("Comprendre la méthodologie de notation"):
 
     st.markdown("""
     Chaque indicateur est transformé en un score compris entre 0 et 100.
+    Un score élevé traduit une situation plus favorable.
 
-    - **PIB :** score croissant selon la croissance économique.
-    - **Inflation :** score maximal autour de 2 %.
-    - **Chômage :** score décroissant lorsque le chômage augmente.
-    - **Euro Stoxx 50 :** position relative du dernier niveau dans son historique.
-    - **VIX :** score décroissant lorsque la volatilité augmente.
+    **Méthodes de normalisation :**
+
+    - **PIB :** normalisation linéaire entre -2 % (score 0) et +4 % (score 100).
+    - **Inflation :** score maximal de 100 autour de la cible de 2 %. Le score diminue à mesure que l'écart à cette cible augmente.
+    - **Chômage :** normalisation inversée entre 3 % (score 100) et 12 % (score 0).
+    - **Euro Stoxx 50 :** performance boursière sur 12 mois. Une performance de -20 % donne un score de 0, 0 % un score de 50 et +20 % ou plus un score de 100.
+    - **VIX :** normalisation inversée entre 10 (score 100) et 40 (score 0). Une volatilité élevée traduit une aversion au risque plus importante.
+
+    **Construction du score global :**
 
     Le score global correspond à la moyenne pondérée des scores
     des indicateurs sélectionnés.
 
-    Les pondérations sont automatiquement normalisées lors du calcul.
+    Les pondérations sont automatiquement normalisées afin que
+    leur somme soit égale à 100 %, même lorsque certains indicateurs
+    sont désactivés.
 
-    Les seuils de notation constituent des conventions méthodologiques
-    retenues pour construire ce baromètre. Le score ne constitue pas
-    une prévision officielle de la conjoncture économique.
+    Les seuils et pondérations constituent des conventions
+    méthodologiques retenues pour construire ce baromètre.
+    Le score ne constitue pas une prévision officielle de la conjoncture.
     """)
-
-with st.expander("Sources des données"):
-
-    st.markdown("""
-    - PIB : Eurostat — `namq_10_gdp`
-    - Inflation : Eurostat — `prc_hicp_manr` et `prc_hicp_minr`
-    - Chômage : Eurostat — `une_rt_m`
-    - Euro Stoxx 50 : Yahoo Finance — `^STOXX50E`
-    - VIX : Yahoo Finance — `^VIX`
-    """)
-
-st.caption(
-    "ECONOMY MONITOR | Projet académique de veille économique et financière"
-)
