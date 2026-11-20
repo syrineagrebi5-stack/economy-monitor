@@ -310,11 +310,28 @@ function renderContributionChart() {
     });
 }
 
-function renderHistoryChart() {
-    const name =
-        document.getElementById("history-indicator").value;
 
-    const records = dashboardData.histories[name] || [];
+function renderHistoryChart() {
+    const name = document.getElementById("history-indicator").value;
+    const period = document.getElementById("history-period").value;
+
+    const allRecords = dashboardData.histories[name] || [];
+
+    let records = [...allRecords];
+
+    if (period !== "all" && records.length > 0) {
+        // On prend comme référence la date de la dernière donnée disponible
+        const lastDate = new Date(records[records.length - 1].Date);
+
+        const startDate = new Date(lastDate);
+        startDate.setFullYear(
+            startDate.getFullYear() - Number(period)
+        );
+
+        records = records.filter(item =>
+            new Date(item.Date) >= startDate
+        );
+    }
 
     Plotly.newPlot("history-chart", [{
         x: records.map(item => item.Date),
@@ -334,6 +351,7 @@ function renderHistoryChart() {
         displayModeBar: false
     });
 }
+
 
 function renderInterpretation() {
     const score = calculateGlobalScore();
@@ -391,6 +409,9 @@ document.getElementById("refresh-button")
     .addEventListener("click", loadData);
 
 document.getElementById("history-indicator")
+    .addEventListener("change", renderHistoryChart);
+
+document.getElementById("history-period")
     .addEventListener("change", renderHistoryChart);
 
 loadData();
