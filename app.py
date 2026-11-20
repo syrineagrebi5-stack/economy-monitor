@@ -530,6 +530,87 @@ def get_indicator_trend(name, df):
 
     return variation, status
 
+def calculate_historical_global_score(data, selected, weights):
+
+    # Récupération des dates disponibles
+    all_dates = []
+
+    for key in ["gdp", "inflation", "unemployment", "eurostoxx", "vix"]:
+        df = data.get(key)
+
+        if df is not None and not df.empty:
+            all_dates.extend(df["Date"].tolist())
+
+    if not all_dates:
+        return None
+
+    dates = sorted(set(all_dates))
+
+    historical_scores = []
+
+    for date in dates:
+
+        historical_data = {}
+
+        # Dernière observation disponible à chaque date
+        for key in ["gdp", "inflation", "unemployment", "eurostoxx", "vix"]:
+
+            df = data.get(key)
+
+            if df is None or df.empty:
+                historical_data[key] = None
+                continue
+
+            available = df[df["Date"] <= date]
+
+            if available.empty:
+                historical_data[key] = None
+            else:
+                historical_data[key] = available.copy()
+
+        scores = {}
+
+        if selected.get("Croissance du PIB") and historical_data["gdp"] is not None:
+            scores["Croissance du PIB"] = score_gdp(
+                float(historical_data["gdp"].iloc[-1]["Value"])
+            )
+
+        if selected.get("Inflation") and historical_data["inflation"] is not None:
+            scores["Inflation"] = score_inflation(
+                float(historical_data["inflation"].iloc[-1]["Value"])
+            )
+
+        if selected.get("Chômage") and historical_data["unemployment"] is not None:
+            scores["Chômage"] = score_unemployment(
+                float(historical_data["unemployment"].iloc[-1]["Value"])
+            )
+
+        if selected.get("Euro Stoxx 50") and historical_data["eurostoxx"] is not None:
+            euro_score = score_eurostoxx(
+                historical_data["eurostoxx"]
+            )
+
+            if euro_score is not None:
+                scores["Euro Stoxx 50"] = euro_score
+
+        if selected.get("VIX") and historical_data["vix"] is not None:
+            scores["VIX"] = score_vix(
+                float(historical_data["vix"].iloc[-1]["Value"])
+            )
+
+        historical_score = calculate_global_score(scores, weights)
+
+        if historical_score is not None:
+            historical_scores.append({
+                "Date": date,
+                "Score global": historical_score
+            })
+
+    if not historical_scores:
+        return None
+
+    return pd.DataFrame(historical_scores)
+
 # ==========================================
 # CARTES DES CINQ INDICATEURS
 # ==========================================
