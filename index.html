@@ -58,25 +58,42 @@
         <div id="indicators" class="indicator-grid"></div>
     </section>
 
-    <section>
-        <p class="section-label">ANALYSE</p>
-        <h2>Contribution au score global</h2>
-        <div id="contribution-chart" class="chart"></div>
-    </section>
+<section>
+    <p class="section-label">ANALYSE</p>
+    <h2>Contribution au score global</h2>
+
+    <div class="history-controls">
+        <select id="contribution-period">
+            <option value="1">1 an</option>
+            <option value="3">3 ans</option>
+            <option value="5" selected>5 ans</option>
+            <option value="all">Toute la période</option>
+        </select>
+    </div>
+
+    <div id="contribution-chart" class="chart"></div>
+</section>
 
     <section>
         <p class="section-label">ÉVOLUTION</p>
         <h2>Historique des indicateurs</h2>
 
-        <div class="history-controls">
-            <select id="history-indicator">
-                <option value="Croissance du PIB">Croissance du PIB</option>
-                <option value="Inflation">Inflation</option>
-                <option value="Chômage">Chômage</option>
-                <option value="Euro Stoxx 50">Euro Stoxx 50</option>
-                <option value="VIX">VIX</option>
-            </select>
-        </div>
+<div class="history-controls">
+    <select id="history-indicator">
+        <option value="Croissance du PIB">Croissance du PIB</option>
+        <option value="Inflation">Inflation</option>
+        <option value="Chômage">Chômage</option>
+        <option value="Euro Stoxx 50">Euro Stoxx 50</option>
+        <option value="VIX">VIX</option>
+    </select>
+
+    <select id="history-period">
+        <option value="1">1 an</option>
+        <option value="3">3 ans</option>
+        <option value="5" selected>5 ans</option>
+        <option value="all">Toute la période</option>
+    </select>
+</div>
 
         <div id="history-chart" class="chart"></div>
     </section>
