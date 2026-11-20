@@ -333,6 +333,32 @@ if normalized_weights:
         "par la pondération effective de chaque indicateur."
     )
 
+    st.markdown("#### Poids des indicateurs dans le score global")
+
+    contribution_chart = px.bar(
+        contribution_df,
+        x="Indicateur",
+        y="Contribution au score",
+        text="Contribution au score",
+        color="Contribution au score",
+        color_continuous_scale="Blues",
+        title="Contribution de chaque indicateur"
+    )
+
+    contribution_chart.update_layout(
+        showlegend=False,
+        coloraxis_showscale=False,
+        yaxis_title="Points apportés au score global",
+        xaxis_title="",
+        plot_bgcolor="white",
+        paper_bgcolor="white"
+    )
+
+    st.plotly_chart(
+        contribution_chart,
+        use_container_width=True
+    )
+
 # ==========================================
 # CARTES DES CINQ INDICATEURS
 # ==========================================
