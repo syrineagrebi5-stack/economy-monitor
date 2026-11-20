@@ -163,3 +163,68 @@ if active:
 
 st.divider()
 st.caption("ECONOMY MONITOR | Projet académique de veille économique et financière")
+
+# ==========================================
+# TEST DES SOURCES DE DONNEES REELLES
+# ==========================================
+
+from data import (
+    get_gdp,
+    get_inflation,
+    get_unemployment,
+    get_eurostoxx,
+    get_vix
+)
+
+@st.cache_data(ttl=3600)
+def test_data_sources():
+    functions = {
+        "Croissance du PIB": get_gdp,
+        "Inflation": get_inflation,
+        "Chômage": get_unemployment,
+        "Euro Stoxx 50": get_eurostoxx,
+        "VIX": get_vix
+    }
+
+    results = {}
+
+    for name, function in functions.items():
+        try:
+            df = function()
+
+            if df is not None and not df.empty:
+                latest = df.iloc[-1]
+
+                results[name] = {
+                    "Statut": "Données récupérées",
+                    "Dernière valeur": round(float(latest["Value"]), 2),
+                    "Date": latest["Date"].strftime("%d/%m/%Y"),
+                    "Nombre d'observations": len(df)
+                }
+            else:
+                results[name] = {
+                    "Statut": "Aucune donnée",
+                    "Dernière valeur": None,
+                    "Date": None,
+                    "Nombre d'observations": 0
+                }
+
+        except Exception as error:
+            results[name] = {
+                "Statut": f"Erreur : {str(error)[:100]}",
+                "Dernière valeur": None,
+                "Date": None,
+                "Nombre d'observations": 0
+            }
+
+    return pd.DataFrame(results).T
+
+
+st.divider()
+st.subheader("Diagnostic des sources de données")
+
+if st.button("Tester les cinq sources"):
+    with st.spinner("Récupération des données en cours..."):
+        diagnostic = test_data_sources()
+
+    st.dataframe(diagnostic, use_container_width=True)
