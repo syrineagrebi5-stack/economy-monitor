@@ -210,8 +210,6 @@ global_score = calculate_global_score(
     weights
 )
 
-# Pondérations effectivement utilisées après normalisation
-
 total_active_weight = sum(
     weight for name, weight in weights.items()
     if name in active_scores
@@ -277,14 +275,12 @@ if global_score is not None:
         )
 
     with col2:
-
         st.metric(
             "INDICATEURS ACTIFS",
             f"{len(active_scores)}/5"
         )
 
     with col3:
-
         st.metric(
             "POIDS SAISIS",
             f"{total_active_weight}%"
@@ -325,6 +321,11 @@ if normalized_weights:
         hide_index=True
     )
 
+
+# ==========================================
+# CARTES DES CINQ INDICATEURS
+# ==========================================
+
 cards = st.columns(5)
 
 for i, (name, info) in enumerate(indicators.items()):
@@ -333,8 +334,34 @@ for i, (name, info) in enumerate(indicators.items()):
 
     with cards[i]:
 
-        st.markdown(f"**{name}**")
-        st.caption(info["description"])
+        st.markdown(
+            f"""
+            <div style="
+                background-color: white;
+                border: 1px solid #E4E9F0;
+                border-radius: 12px;
+                padding: 15px;
+                min-height: 115px;
+            ">
+                <div style="
+                    color: #142B4A;
+                    font-size: 17px;
+                    font-weight: 700;
+                    min-height: 45px;
+                ">
+                    {name}
+                </div>
+                <div style="
+                    color: #64748B;
+                    font-size: 12px;
+                    min-height: 45px;
+                ">
+                    {info["description"]}
+                </div>
+            </div>
+            """,
+            unsafe_allow_html=True
+        )
 
         if df is not None and not df.empty:
 
