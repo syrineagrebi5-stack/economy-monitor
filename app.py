@@ -955,12 +955,8 @@ if global_score is not None:
             )
 
     except Exception as error:
-
-        st.error(
-            "Une erreur est survenue lors du calcul "
-            f"de l'historique : {error}"
-        )
-
+        st.error("Erreur dans le calcul historique")
+        st.exception(error)
 else:
 
     st.info(
