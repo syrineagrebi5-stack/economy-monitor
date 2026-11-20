@@ -302,26 +302,36 @@ else:
 # ==========================================
 
 st.divider()
+
 st.subheader("Analyse des indicateurs")
 
 if normalized_weights:
 
-    st.markdown("#### Répartition des pondérations")
+    st.markdown("#### Contribution des indicateurs au score global")
 
-    weight_df = pd.DataFrame([
+    contribution_df = pd.DataFrame([
         {
             "Indicateur": name,
-            "Pondération effective": f"{weight:.1f}%"
+            "Score individuel": round(active_scores[name], 1),
+            "Pondération effective": f"{weight:.1f}%",
+            "Contribution au score": round(
+                active_scores[name] * weight / 100, 2
+            )
         }
         for name, weight in normalized_weights.items()
+        if name in active_scores
     ])
 
     st.dataframe(
-        weight_df,
+        contribution_df,
         use_container_width=True,
         hide_index=True
     )
 
+    st.caption(
+        "La contribution correspond au score individuel multiplié "
+        "par la pondération effective de chaque indicateur."
+    )
 
 # ==========================================
 # CARTES DES CINQ INDICATEURS
