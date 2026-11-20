@@ -127,74 +127,6 @@ if loading_error:
     st.stop()
 
 # ==========================================
-# EXPORT DES DONNEES ET DES SCORES EN CSV
-# ==========================================
-
-st.divider()
-st.subheader("Export des données et des scores")
-
-export_rows = []
-
-indicator_keys = {
-    "Croissance du PIB": "gdp",
-    "Inflation": "inflation",
-    "Chômage": "unemployment",
-    "Euro Stoxx 50": "eurostoxx",
-    "VIX": "vix"
-}
-
-for name, key in indicator_keys.items():
-
-    df = data.get(key)
-
-    if df is not None and not df.empty:
-
-        valid_values = pd.to_numeric(
-            df["Value"], errors="coerce"
-        ).dropna()
-
-        if not valid_values.empty:
-
-            latest_index = valid_values.index[-1]
-
-            raw_value = float(valid_values.iloc[-1])
-
-            date_value = pd.to_datetime(
-                df.loc[latest_index, "Date"]
-            ).strftime("%Y-%m-%d")
-
-            export_rows.append({
-                "Indicateur": name,
-                "Date": date_value,
-                "Valeur brute": raw_value,
-                "Score normalisé": active_scores.get(name),
-                "Poids (%)": normalized_weights.get(name),
-                "Score global": global_score
-            })
-
-if export_rows:
-
-    export_df = pd.DataFrame(export_rows)
-
-    csv_file = export_df.to_csv(
-        index=False,
-        sep=";",
-        encoding="utf-8-sig"
-    )
-
-    st.download_button(
-        label="📥 Télécharger les données et les scores (CSV)",
-        data=csv_file,
-        file_name="economy_monitor_complete.csv",
-        mime="text/csv"
-    )
-
-else:
-    st.warning("Aucune donnée disponible pour l'export.")
-
-
-
-# ==========================================
 # CONFIGURATION DES INDICATEURS
 # ==========================================
 
@@ -295,6 +227,79 @@ normalized_weights = {
     for name, weight in weights.items()
     if name in active_scores and weight > 0 and total_active_weight > 0
 }
+
+# ==========================================
+# EXPORT DES DONNEES ET DES SCORES EN CSV
+# ==========================================
+
+st.divider()
+st.subheader("Export des données et des scores")
+
+export_rows = []
+
+indicator_keys = {
+    "Croissance du PIB": "gdp",
+    "Inflation": "inflation",
+    "Chômage": "unemployment",
+    "Euro Stoxx 50": "eurostoxx",
+    "VIX": "vix"
+}
+
+for name, key in indicator_keys.items():
+
+    df = data.get(key)
+
+    if df is not None and not df.empty:
+
+        clean_export = df.copy()
+
+        clean_export["Value"] = pd.to_numeric(
+            clean_export["Value"],
+            errors="coerce"
+        )
+
+        clean_export["Date"] = pd.to_datetime(
+            clean_export["Date"],
+            errors="coerce"
+        )
+
+        clean_export = clean_export.dropna(
+            subset=["Value", "Date"]
+        ).sort_values("Date")
+
+        if not clean_export.empty:
+
+            latest = clean_export.iloc[-1]
+
+            export_rows.append({
+                "Indicateur": name,
+                "Date": latest["Date"].strftime("%Y-%m-%d"),
+                "Valeur brute": float(latest["Value"]),
+                "Score normalisé": active_scores.get(name),
+                "Poids (%)": normalized_weights.get(name),
+                "Score global": global_score
+            })
+
+if export_rows:
+
+    export_df = pd.DataFrame(export_rows)
+
+    csv_file = export_df.to_csv(
+        index=False,
+        sep=";",
+        encoding="utf-8-sig"
+    )
+
+    st.download_button(
+        label="📥 Télécharger les données et les scores (CSV)",
+        data=csv_file,
+        file_name="economy_monitor_complete.csv",
+        mime="text/csv"
+    )
+
+else:
+
+    st.warning("Aucune donnée disponible pour l'export.")
 
 
 # ==========================================
