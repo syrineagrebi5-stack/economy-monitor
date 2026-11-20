@@ -698,6 +698,82 @@ for i, (name, info) in enumerate(indicators.items()):
 
             st.warning("Donnée indisponible")
 
+# ==========================================
+# HISTORIQUE DU SCORE GLOBAL
+# ==========================================
+
+st.divider()
+st.subheader("Évolution historique du score global")
+
+if global_score is not None:
+
+    historical_data = calculate_historical_global_score(
+        data,
+        selected,
+        weights
+    )
+
+    if historical_data is not None and not historical_data.empty:
+
+        historical_fig = px.line(
+            historical_data,
+            x="Date",
+            y="Score global",
+            title="Évolution du baromètre économique"
+        )
+
+        historical_fig.update_traces(
+            line=dict(color="#2563EB", width=3),
+            hovertemplate=(
+                "<b>Date :</b> %{x|%d/%m/%Y}<br>"
+                "<b>Score :</b> %{y:.1f}/100"
+                "<extra></extra>"
+            )
+        )
+
+        historical_fig.add_hline(
+            y=70,
+            line_dash="dash",
+            line_color="#16A34A",
+            annotation_text="Situation favorable"
+        )
+
+        historical_fig.add_hline(
+            y=40,
+            line_dash="dash",
+            line_color="#D97706",
+            annotation_text="Seuil de situation modérée"
+        )
+
+        historical_fig.update_layout(
+            yaxis=dict(
+                title="Score global /100",
+                range=[0, 100]
+            ),
+            xaxis_title="Date",
+            plot_bgcolor="white",
+            paper_bgcolor="white",
+            hovermode="x unified",
+            height=450
+        )
+
+        st.plotly_chart(
+            historical_fig,
+            use_container_width=True
+        )
+
+    else:
+        st.info(
+            "Les données historiques sont insuffisantes "
+            "pour calculer un score global."
+        )
+
+else:
+    st.info(
+        "Activez au moins un indicateur avec une pondération "
+        "positive pour afficher l'historique."
+    )
+
 
 
 # ==========================================
