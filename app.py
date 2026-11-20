@@ -126,6 +126,60 @@ if loading_error:
     st.error(f"Erreur lors du chargement : {loading_error}")
     st.stop()
 
+# ==========================================
+# EXPORT DES DONNEES EN CSV
+# ==========================================
+
+st.divider()
+st.subheader("Export des données")
+
+export_frames = []
+
+indicator_names = {
+    "gdp": "Croissance du PIB",
+    "inflation": "Inflation",
+    "unemployment": "Chômage",
+    "eurostoxx": "Euro Stoxx 50",
+    "vix": "VIX"
+}
+
+for key, name in indicator_names.items():
+
+    df = data.get(key)
+
+    if df is not None and not df.empty:
+
+        export_df = df.copy()
+        export_df["Indicateur"] = name
+
+        export_frames.append(export_df)
+
+if export_frames:
+
+    csv_data = pd.concat(export_frames, ignore_index=True)
+
+    csv_data = csv_data[["Indicateur", "Date", "Value"]]
+
+    csv_data["Date"] = pd.to_datetime(
+        csv_data["Date"]
+    ).dt.strftime("%Y-%m-%d")
+
+    csv_file = csv_data.to_csv(
+        index=False,
+        sep=";",
+        encoding="utf-8-sig"
+    )
+
+    st.download_button(
+        label="📥 Télécharger les données en CSV",
+        data=csv_file,
+        file_name="economy_monitor_data.csv",
+        mime="text/csv"
+    )
+
+else:
+    st.warning("Aucune donnée disponible pour l'export.")
+
 
 # ==========================================
 # CONFIGURATION DES INDICATEURS
