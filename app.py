@@ -29,15 +29,22 @@ st.markdown("""
 .stApp {
     background-color: #F5F7FA;
 }
+
 h1, h2, h3 {
     color: #142B4A;
 }
+
 [data-testid="stMetric"] {
     background-color: white;
     padding: 18px;
     border-radius: 12px;
     border: 1px solid #E4E9F0;
 }
+
+[data-testid="stSidebar"] {
+    background-color: #EDF1F6;
+}
+
 </style>
 """, unsafe_allow_html=True)
 
@@ -87,11 +94,14 @@ with col_refresh:
         st.rerun()
 
 with col_info:
-    st.caption("Les données sont mises en cache pendant 24 heures. Leur fréquence de publication dépend de chaque source.")
+    st.caption(
+        "Les données sont mises en cache pendant 24 heures. "
+        "Leur fréquence de publication dépend de chaque source."
+    )
 
 
 # ==========================================
-# RECUPERATION
+# RECUPERATION DES DONNEES
 # ==========================================
 
 with st.spinner("Chargement des données économiques et financières..."):
@@ -99,6 +109,7 @@ with st.spinner("Chargement des données économiques et financières..."):
         data = load_all_data()
         scores = calculate_scores(data)
         loading_error = None
+
     except Exception as error:
         data = {}
         scores = {}
@@ -148,7 +159,7 @@ indicators = {
 
 
 # ==========================================
-# BARRE LATERALE
+# BARRE LATERALE : PERSONNALISATION
 # ==========================================
 
 st.sidebar.title("PERSONNALISATION")
@@ -158,6 +169,7 @@ selected = {}
 weights = {}
 
 for name, info in indicators.items():
+
     available = name in scores
 
     selected[name] = st.sidebar.checkbox(
@@ -171,7 +183,9 @@ st.sidebar.divider()
 st.sidebar.subheader("Pondération")
 
 for name, info in indicators.items():
+
     if selected[name]:
+
         weights[name] = st.sidebar.slider(
             name,
             min_value=0,
@@ -195,7 +209,9 @@ global_score = calculate_global_score(
     active_scores,
     weights
 )
+
 # Pondérations effectivement utilisées après normalisation
+
 total_active_weight = sum(
     weight for name, weight in weights.items()
     if name in active_scores
@@ -204,69 +220,80 @@ total_active_weight = sum(
 normalized_weights = {
     name: round(weight / total_active_weight * 100, 1)
     for name, weight in weights.items()
-    if name in active_scores and total_active_weight > 0
+    if name in active_scores and weight > 0 and total_active_weight > 0
 }
+
+
+# ==========================================
+# AFFICHAGE DU SCORE GLOBAL
+# ==========================================
+
 st.divider()
 st.subheader("Votre baromètre économique")
 
 if global_score is not None:
 
-    col1, col2, col3 = st.columns(3)
+    if global_score >= 70:
+        appreciation = "Situation favorable"
+        couleur = "#16A34A"
+        message = "Conjoncture favorable selon les indicateurs sélectionnés."
+
+    elif global_score >= 40:
+        appreciation = "Situation modérée"
+        couleur = "#D97706"
+        message = "Certains indicateurs méritent une attention particulière."
+
+    else:
+        appreciation = "Situation dégradée"
+        couleur = "#DC2626"
+        message = "Conjoncture défavorable selon les indicateurs sélectionnés."
+
+    col1, col2, col3 = st.columns([2, 1, 1])
 
     with col1:
-        st.markdown("### Votre baromètre économique")
 
-if global_score >= 70:
-    appreciation = "Situation favorable"
-    couleur = "#16A34A"
-elif global_score >= 40:
-    appreciation = "Situation modérée"
-    couleur = "#D97706"
-else:
-    appreciation = "Situation dégradée"
-    couleur = "#DC2626"
-
-st.markdown(
-    f"""
-    <div style="
-        background-color: #F8FAFC;
-        padding: 25px;
-        border-radius: 15px;
-        text-align: center;
-        border: 1px solid #E2E8F0;
-    ">
-        <div style="font-size: 15px; color: #64748B;">
-            SCORE GLOBAL
-        </div>
-        <div style="font-size: 52px; font-weight: bold; color: {couleur};">
-            {global_score:.1f}<span style="font-size: 22px;">/100</span>
-        </div>
-        <div style="font-size: 18px; font-weight: 600; color: {couleur};">
-            {appreciation}
-        </div>
-    </div>
-    """,
-    unsafe_allow_html=True
-)
+        st.markdown(
+            f"""
+            <div style="
+                background-color: white;
+                padding: 25px;
+                border-radius: 15px;
+                text-align: center;
+                border: 1px solid #E2E8F0;
+                min-height: 150px;
+            ">
+                <div style="font-size: 15px; color: #64748B;">
+                    SCORE GLOBAL
+                </div>
+                <div style="font-size: 52px; font-weight: bold; color: {couleur};">
+                    {global_score:.1f}<span style="font-size: 22px;">/100</span>
+                </div>
+                <div style="font-size: 18px; font-weight: 600; color: {couleur};">
+                    {appreciation}
+                </div>
+            </div>
+            """,
+            unsafe_allow_html=True
+        )
 
     with col2:
-        st.metric("INDICATEURS ACTIFS", f"{len(active_scores)}/5")
+
+        st.metric(
+            "INDICATEURS ACTIFS",
+            f"{len(active_scores)}/5"
+        )
 
     with col3:
-        total_weight = sum(
-            weight for name, weight in weights.items()
-            if name in active_scores
-        )
-        st.metric("POIDS SAISIS", f"{total_weight}%")
 
-    if global_score >= 70:
-        st.success("Conjoncture favorable selon les indicateurs sélectionnés.")
-    elif global_score >= 50:
-        st.warning("Conjoncture intermédiaire : certains indicateurs méritent une attention particulière.")
-    else:
-        st.error("Conjoncture défavorable selon les indicateurs sélectionnés.")
+        st.metric(
+            "POIDS SAISIS",
+            f"{total_active_weight}%"
+        )
+
+    st.info(message)
 
 else:
+
     st.warning(
         "Sélectionnez au moins un indicateur et attribuez-lui "
         "une pondération supérieure à zéro."
@@ -279,7 +306,9 @@ else:
 
 st.divider()
 st.subheader("Analyse des indicateurs")
+
 if normalized_weights:
+
     st.markdown("#### Répartition des pondérations")
 
     weight_df = pd.DataFrame([
@@ -295,6 +324,7 @@ if normalized_weights:
         use_container_width=True,
         hide_index=True
     )
+
 cards = st.columns(5)
 
 for i, (name, info) in enumerate(indicators.items()):
@@ -325,6 +355,7 @@ for i, (name, info) in enumerate(indicators.items()):
             st.caption(f"Observation : {date}")
 
         else:
+
             st.warning("Donnée indisponible")
 
 
@@ -368,7 +399,14 @@ if available_names:
         hovermode="x unified"
     )
 
-    st.plotly_chart(fig, use_container_width=True)
+    st.plotly_chart(
+        fig,
+        use_container_width=True
+    )
+
+else:
+
+    st.warning("Aucune série historique disponible.")
 
 
 # ==========================================
@@ -392,6 +430,10 @@ with st.expander("Comprendre la méthodologie de notation"):
     des indicateurs sélectionnés.
 
     Les pondérations sont automatiquement normalisées lors du calcul.
+
+    Les seuils de notation constituent des conventions méthodologiques
+    retenues pour construire ce baromètre. Le score ne constitue pas
+    une prévision officielle de la conjoncture économique.
     """)
 
 with st.expander("Sources des données"):
