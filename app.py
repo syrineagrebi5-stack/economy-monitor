@@ -414,7 +414,23 @@ if available_names:
 
     chosen_key = indicators[chosen]["key"]
     chart_data = data[chosen_key].copy()
+    # Filtre par année
+    chart_data["Année"] = chart_data["Date"].dt.year
 
+    available_years = sorted(
+        chart_data["Année"].unique().tolist(),
+        reverse=True
+    )
+
+    selected_year = st.selectbox(
+        "Choisissez une année",
+        ["Toutes les années"] + available_years
+    )
+
+    if selected_year != "Toutes les années":
+        chart_data = chart_data[
+            chart_data["Année"] == selected_year
+        ]
     # Préparation des données
     chart_data = chart_data.sort_values("Date")
 
