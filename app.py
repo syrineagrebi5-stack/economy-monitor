@@ -678,3 +678,34 @@ with st.expander("Comprendre la méthodologie de notation"):
     méthodologiques retenues pour construire ce baromètre.
     Le score ne constitue pas une prévision officielle de la conjoncture.
     """)
+    
+with st.expander("Sources des données"):
+
+    st.markdown("""
+    **Eurostat — Commission européenne**
+
+    Base de données statistiques officielle de l'Union européenne.
+
+    - PIB : `namq_10_gdp`
+    - Inflation : `prc_hicp_manr` et `prc_hicp_minr`
+    - Chômage : `une_rt_m`
+
+    Site : https://ec.europa.eu/eurostat
+
+    **Yahoo Finance**
+
+    Données historiques des marchés financiers.
+
+    - Euro Stoxx 50 : `^STOXX50E`
+    - VIX : `^VIX`
+
+    Site : https://finance.yahoo.com
+
+    **Méthode de collecte**
+
+    Les données sont récupérées automatiquement avec Python,
+    à l'aide de requêtes HTTP vers Eurostat et de la bibliothèque
+    yfinance pour les données financières.
+
+    Les données sont mises en cache pendant 24 heures.
+    """)
