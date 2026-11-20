@@ -423,23 +423,32 @@ if normalized_weights:
 
     st.markdown("#### Poids des indicateurs dans le score global")
 
+
     contribution_chart = px.bar(
         contribution_df,
         x="Indicateur",
         y="Contribution au score",
         text="Contribution au score",
-        color="Contribution au score",
-        color_continuous_scale="Blues",
         title="Contribution de chaque indicateur"
+    )
+
+    contribution_chart.update_traces(
+        marker_color="#2563EB",
+        textposition="outside",
+        texttemplate="%{text:.2f}"
     )
 
     contribution_chart.update_layout(
         showlegend=False,
-        coloraxis_showscale=False,
         yaxis_title="Points apportés au score global",
         xaxis_title="",
         plot_bgcolor="white",
-        paper_bgcolor="white"
+        paper_bgcolor="white",
+        yaxis=dict(
+            showgrid=True,
+            gridcolor="#E2E8F0",
+            rangemode="tozero"
+        )
     )
 
     st.plotly_chart(
