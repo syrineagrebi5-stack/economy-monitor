@@ -195,7 +195,17 @@ global_score = calculate_global_score(
     active_scores,
     weights
 )
+# Pondérations effectivement utilisées après normalisation
+total_active_weight = sum(
+    weight for name, weight in weights.items()
+    if name in active_scores
+)
 
+normalized_weights = {
+    name: round(weight / total_active_weight * 100, 1)
+    for name, weight in weights.items()
+    if name in active_scores and total_active_weight > 0
+}
 st.divider()
 st.subheader("Votre baromètre économique")
 
@@ -236,7 +246,22 @@ else:
 
 st.divider()
 st.subheader("Analyse des indicateurs")
+if normalized_weights:
+    st.markdown("#### Répartition des pondérations")
 
+    weight_df = pd.DataFrame([
+        {
+            "Indicateur": name,
+            "Pondération effective": f"{weight:.1f}%"
+        }
+        for name, weight in normalized_weights.items()
+    ])
+
+    st.dataframe(
+        weight_df,
+        use_container_width=True,
+        hide_index=True
+    )
 cards = st.columns(5)
 
 for i, (name, info) in enumerate(indicators.items()):
