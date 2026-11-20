@@ -130,55 +130,73 @@ if loading_error:
 # EXPORT DES DONNEES EN CSV
 # ==========================================
 
+
+# ==========================================
+# EXPORT DES DONNEES ET DES SCORES EN CSV
+# ==========================================
+
 st.divider()
-st.subheader("Export des données")
+st.subheader("Export des données et des scores")
 
-export_frames = []
+export_rows = []
 
-indicator_names = {
-    "gdp": "Croissance du PIB",
-    "inflation": "Inflation",
-    "unemployment": "Chômage",
-    "eurostoxx": "Euro Stoxx 50",
-    "vix": "VIX"
+indicator_keys = {
+    "Croissance du PIB": "gdp",
+    "Inflation": "inflation",
+    "Chômage": "unemployment",
+    "Euro Stoxx 50": "eurostoxx",
+    "VIX": "vix"
 }
 
-for key, name in indicator_names.items():
+for name, key in indicator_keys.items():
 
     df = data.get(key)
 
     if df is not None and not df.empty:
 
-        export_df = df.copy()
-        export_df["Indicateur"] = name
+        valid_values = pd.to_numeric(
+            df["Value"], errors="coerce"
+        ).dropna()
 
-        export_frames.append(export_df)
+        if not valid_values.empty:
 
-if export_frames:
+            latest_index = valid_values.index[-1]
 
-    csv_data = pd.concat(export_frames, ignore_index=True)
+            raw_value = float(valid_values.iloc[-1])
 
-    csv_data = csv_data[["Indicateur", "Date", "Value"]]
+            date_value = pd.to_datetime(
+                df.loc[latest_index, "Date"]
+            ).strftime("%Y-%m-%d")
 
-    csv_data["Date"] = pd.to_datetime(
-        csv_data["Date"]
-    ).dt.strftime("%Y-%m-%d")
+            export_rows.append({
+                "Indicateur": name,
+                "Date": date_value,
+                "Valeur brute": raw_value,
+                "Score normalisé": active_scores.get(name),
+                "Poids (%)": normalized_weights.get(name),
+                "Score global": global_score
+            })
 
-    csv_file = csv_data.to_csv(
+if export_rows:
+
+    export_df = pd.DataFrame(export_rows)
+
+    csv_file = export_df.to_csv(
         index=False,
         sep=";",
         encoding="utf-8-sig"
     )
 
     st.download_button(
-        label="📥 Télécharger les données en CSV",
+        label="📥 Télécharger les données et les scores (CSV)",
         data=csv_file,
-        file_name="economy_monitor_data.csv",
+        file_name="economy_monitor_complete.csv",
         mime="text/csv"
     )
 
 else:
     st.warning("Aucune donnée disponible pour l'export.")
+
 
 
 # ==========================================
