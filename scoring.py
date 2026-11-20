@@ -50,23 +50,49 @@ def score_unemployment(value):
 # 5. SCORE EURO STOXX 50
 # ==========================================
 
+
 def score_eurostoxx(history):
     """
-    Mesure la position du dernier niveau de l'indice
-    dans sa distribution historique sur 5 ans.
+    Mesure la performance du EURO STOXX 50 sur les 12 derniers mois.
 
-    Ce score mesure une position relative,
-    pas directement la performance économique.
+    Le score varie de 0 à 100 :
+    -20 % ou moins = 0
+    0 % = 50
+    +20 % ou plus = 100
     """
 
-    values = pd.to_numeric(history["Value"], errors="coerce").dropna()
+    history = history.copy()
 
-    if values.empty:
+    history["Value"] = pd.to_numeric(
+        history["Value"], errors="coerce"
+    )
+
+    history = history.dropna(subset=["Value", "Date"])
+    history = history.sort_values("Date")
+
+    if history.empty:
         return None
 
-    latest = values.iloc[-1]
+    latest = history.iloc[-1]
 
-    return float((values <= latest).mean() * 100)
+    target_date = latest["Date"] - pd.DateOffset(years=1)
+
+    past_data = history[history["Date"] <= target_date]
+
+    if past_data.empty:
+        return None
+
+    past_value = past_data.iloc[-1]["Value"]
+    latest_value = latest["Value"]
+
+    if past_value <= 0:
+        return None
+
+    performance = (latest_value / past_value - 1) * 100
+
+    score = (performance + 20) / 40 * 100
+
+    return float(max(0, min(100, score)))
 
 
 # ==========================================
