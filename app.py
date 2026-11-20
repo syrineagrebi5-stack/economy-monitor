@@ -52,7 +52,6 @@ h1, h2, h3 {
 [data-testid="stSidebar"] {
     background-color: #EDF1F6;
 }
-
 </style>
 """, unsafe_allow_html=True)
 
@@ -132,7 +131,6 @@ if loading_error:
 # CONFIGURATION DES INDICATEURS
 # ==========================================
 
-
 indicators = {
     "Croissance du PIB": {
         "key": "gdp",
@@ -166,6 +164,7 @@ indicators = {
         "description": "Volatilité anticipée du marché américain, révélatrice de l'aversion au risque"
     }
 }
+
 
 # ==========================================
 # BARRE LATERALE : PERSONNALISATION
@@ -284,16 +283,10 @@ if global_score is not None:
         )
 
     with col2:
-        st.metric(
-            "INDICATEURS ACTIFS",
-            f"{len(active_scores)}/5"
-        )
+        st.metric("INDICATEURS ACTIFS", f"{len(active_scores)}/5")
 
     with col3:
-        st.metric(
-            "POIDS SAISIS",
-            f"{total_active_weight}%"
-        )
+        st.metric("POIDS SAISIS", f"{total_active_weight}%")
 
     st.info(message)
 
@@ -303,6 +296,8 @@ else:
         "Sélectionnez au moins un indicateur et attribuez-lui "
         "une pondération supérieure à zéro."
     )
+
+
 # ==========================================
 # AVERTISSEMENT METHODOLOGIQUE
 # ==========================================
@@ -319,30 +314,31 @@ Il ne constitue ni une prévision de marché, ni un conseil
 en investissement, ni un signal automatique d'achat ou de vente.
 """)
 
+
 # ==========================================
 # DETAIL DES INDICATEURS
 # ==========================================
 
 st.divider()
 
-
 if global_score is not None and active_scores:
 
     st.markdown("### Interprétation économique du baromètre")
 
-    # Interprétation générale
     if global_score >= 70:
         interpretation = (
             "La situation économique et financière apparaît favorable. "
             "Les indicateurs sélectionnés traduisent globalement "
             "un environnement positif."
         )
+
     elif global_score >= 40:
         interpretation = (
             "La situation économique et financière apparaît modérée. "
             "Certains indicateurs présentent des fragilités "
             "qui méritent une attention particulière."
         )
+
     else:
         interpretation = (
             "La situation économique et financière apparaît dégradée. "
@@ -351,7 +347,6 @@ if global_score is not None and active_scores:
 
     st.write(interpretation)
 
-    # Points de vigilance liés à l'économie réelle
     macro_names = [
         "Croissance du PIB",
         "Inflation",
@@ -365,6 +360,7 @@ if global_score is not None and active_scores:
     }
 
     if macro_scores:
+
         weakest = sorted(
             macro_scores.items(),
             key=lambda item: item[1]
@@ -375,26 +371,23 @@ if global_score is not None and active_scores:
         for name, score in weakest:
             st.write(f"- {name} : {score:.1f}/100")
 
-    # Analyse distincte des marchés financiers
     st.markdown("**Signaux des marchés financiers :**")
 
     if "Euro Stoxx 50" in active_scores:
+
         score_euro = active_scores["Euro Stoxx 50"]
 
         if score_euro >= 70:
-            st.write(
-                "- Euro Stoxx 50 : dynamique boursière favorable."
-            )
+            st.write("- Euro Stoxx 50 : dynamique boursière favorable.")
+
         elif score_euro >= 40:
-            st.write(
-                "- Euro Stoxx 50 : dynamique boursière modérée."
-            )
+            st.write("- Euro Stoxx 50 : dynamique boursière modérée.")
+
         else:
-            st.write(
-                "- Euro Stoxx 50 : dynamique boursière défavorable."
-            )
+            st.write("- Euro Stoxx 50 : dynamique boursière défavorable.")
 
     if "VIX" in active_scores:
+
         score_vix = active_scores["VIX"]
 
         if score_vix >= 70:
@@ -402,16 +395,23 @@ if global_score is not None and active_scores:
                 "- VIX : volatilité anticipée relativement faible, "
                 "signal d'un environnement de marché plus serein."
             )
+
         elif score_vix >= 40:
             st.write(
                 "- VIX : niveau de risque intermédiaire, "
                 "traduisant une certaine prudence des marchés."
             )
+
         else:
             st.write(
                 "- VIX : volatilité anticipée élevée, "
                 "signal d'une forte aversion au risque."
             )
+
+
+# ==========================================
+# ANALYSE DES INDICATEURS
+# ==========================================
 
 st.subheader("Analyse des indicateurs")
 
@@ -445,7 +445,6 @@ if normalized_weights:
 
     st.markdown("#### Poids des indicateurs dans le score global")
 
-
     contribution_chart = px.bar(
         contribution_df,
         x="Indicateur",
@@ -478,6 +477,11 @@ if normalized_weights:
         use_container_width=True
     )
 
+
+# ==========================================
+# TENDANCE DES INDICATEURS
+# ==========================================
+
 def get_indicator_trend(name, df):
 
     if df is None or len(df) < 2:
@@ -486,7 +490,8 @@ def get_indicator_trend(name, df):
     history = df.copy()
 
     history["Value"] = pd.to_numeric(
-        history["Value"], errors="coerce"
+        history["Value"],
+        errors="coerce"
     )
 
     history = (
@@ -506,23 +511,28 @@ def get_indicator_trend(name, df):
         status = "Stable"
 
     elif name == "Inflation":
+
         previous_distance = abs(previous - 2)
         current_distance = abs(current - 2)
 
         if current_distance < previous_distance:
             status = "Amélioration"
+
         elif current_distance > previous_distance:
             status = "Dégradation"
+
         else:
             status = "Stable"
 
     elif name in ["Croissance du PIB", "Euro Stoxx 50"]:
+
         status = (
             "Amélioration" if variation > 0
             else "Dégradation"
         )
 
     else:
+
         status = (
             "Amélioration" if variation < 0
             else "Dégradation"
@@ -530,16 +540,36 @@ def get_indicator_trend(name, df):
 
     return variation, status
 
+
+# ==========================================
+# CALCUL DE L'HISTORIQUE DU SCORE GLOBAL
+# ==========================================
+
 def calculate_historical_global_score(data, selected, weights):
 
-    # Récupération des dates disponibles
     all_dates = []
 
-    for key in ["gdp", "inflation", "unemployment", "eurostoxx", "vix"]:
+    keys = [
+        "gdp",
+        "inflation",
+        "unemployment",
+        "eurostoxx",
+        "vix"
+    ]
+
+    # Récupération des dates
+    for key in keys:
+
         df = data.get(key)
 
         if df is not None and not df.empty:
-            all_dates.extend(df["Date"].tolist())
+
+            dates = pd.to_datetime(
+                df["Date"],
+                errors="coerce"
+            ).dropna()
+
+            all_dates.extend(dates.tolist())
 
     if not all_dates:
         return None
@@ -552,8 +582,8 @@ def calculate_historical_global_score(data, selected, weights):
 
         historical_data = {}
 
-        # Dernière observation disponible à chaque date
-        for key in ["gdp", "inflation", "unemployment", "eurostoxx", "vix"]:
+        # Données disponibles à la date considérée
+        for key in keys:
 
             df = data.get(key)
 
@@ -561,46 +591,113 @@ def calculate_historical_global_score(data, selected, weights):
                 historical_data[key] = None
                 continue
 
-            available = df[df["Date"] <= date]
+            history = df.copy()
+
+            history["Date"] = pd.to_datetime(
+                history["Date"],
+                errors="coerce"
+            )
+
+            history["Value"] = pd.to_numeric(
+                history["Value"],
+                errors="coerce"
+            )
+
+            history = history.dropna(
+                subset=["Date", "Value"]
+            )
+
+            available = history[
+                history["Date"] <= date
+            ].sort_values("Date")
 
             if available.empty:
                 historical_data[key] = None
+
             else:
                 historical_data[key] = available.copy()
 
         scores = {}
 
-        if selected.get("Croissance du PIB") and historical_data["gdp"] is not None:
-            scores["Croissance du PIB"] = score_gdp(
-                float(historical_data["gdp"].iloc[-1]["Value"])
-            )
+        # PIB
+        if selected.get("Croissance du PIB"):
 
-        if selected.get("Inflation") and historical_data["inflation"] is not None:
-            scores["Inflation"] = score_inflation(
-                float(historical_data["inflation"].iloc[-1]["Value"])
-            )
+            history = historical_data["gdp"]
 
-        if selected.get("Chômage") and historical_data["unemployment"] is not None:
-            scores["Chômage"] = score_unemployment(
-                float(historical_data["unemployment"].iloc[-1]["Value"])
-            )
+            if history is not None and not history.empty:
 
-        if selected.get("Euro Stoxx 50") and historical_data["eurostoxx"] is not None:
-            euro_score = score_eurostoxx(
-                historical_data["eurostoxx"]
-            )
+                value = history["Value"].iloc[-1]
 
-            if euro_score is not None:
-                scores["Euro Stoxx 50"] = euro_score
+                scores["Croissance du PIB"] = score_gdp(
+                    float(value)
+                )
 
-        if selected.get("VIX") and historical_data["vix"] is not None:
-            scores["VIX"] = score_vix(
-                float(historical_data["vix"].iloc[-1]["Value"])
-            )
+        # Inflation
+        if selected.get("Inflation"):
 
-        historical_score = calculate_global_score(scores, weights)
+            history = historical_data["inflation"]
+
+            if history is not None and not history.empty:
+
+                value = history["Value"].iloc[-1]
+
+                scores["Inflation"] = score_inflation(
+                    float(value)
+                )
+
+        # Chômage
+        if selected.get("Chômage"):
+
+            history = historical_data["unemployment"]
+
+            if history is not None and not history.empty:
+
+                value = history["Value"].iloc[-1]
+
+                scores["Chômage"] = score_unemployment(
+                    float(value)
+                )
+
+        # Euro Stoxx 50
+        if selected.get("Euro Stoxx 50"):
+
+            history = historical_data["eurostoxx"]
+
+            if history is not None and not history.empty:
+
+                euro_score = score_eurostoxx(history)
+
+                if euro_score is not None:
+                    scores["Euro Stoxx 50"] = euro_score
+
+        # VIX
+        if selected.get("VIX"):
+
+            history = historical_data["vix"]
+
+            if history is not None and not history.empty:
+
+                vix_values = pd.to_numeric(
+                    history["Value"],
+                    errors="coerce"
+                ).dropna()
+
+                if not vix_values.empty:
+
+                    vix_value = float(
+                        vix_values.iloc[-1]
+                    )
+
+                    scores["VIX"] = score_vix(vix_value)
+
+        # Calcul du score global historique
+        historical_score = calculate_global_score(
+            scores,
+            weights
+        )
 
         if historical_score is not None:
+
             historical_scores.append({
                 "Date": date,
                 "Score global": historical_score
@@ -609,7 +706,16 @@ def calculate_historical_global_score(data, selected, weights):
     if not historical_scores:
         return None
 
-    return pd.DataFrame(historical_scores)
+    result = pd.DataFrame(historical_scores)
+
+    result["Date"] = pd.to_datetime(
+        result["Date"]
+    )
+
+    result = result.sort_values("Date")
+
+    return result
+
 
 # ==========================================
 # CARTES DES CINQ INDICATEURS
@@ -654,133 +760,221 @@ for i, (name, info) in enumerate(indicators.items()):
 
         if df is not None and not df.empty:
 
-            latest = df.iloc[-1]
-            value = float(latest["Value"])
+            clean_df = df.copy()
 
-            if name == "Croissance du PIB":
-                quarter = (latest["Date"].month - 1) // 3 + 1
-                date = f"T{quarter} {latest['Date'].year}"
-            else:
-                date = latest["Date"].strftime("%d/%m/%Y")
+            clean_df["Value"] = pd.to_numeric(
+                clean_df["Value"],
+                errors="coerce"
+            )
 
-            if name in ["Croissance du PIB", "Inflation", "Chômage"]:
-                formatted = f"{value:.2f}%"
-            else:
-                formatted = f"{value:,.2f}"
+            clean_df = clean_df.dropna(
+                subset=["Value", "Date"]
+            ).sort_values("Date")
 
-            st.metric("Dernière valeur", formatted)
+            if not clean_df.empty:
 
+                latest = clean_df.iloc[-1]
+                value = float(latest["Value"])
 
-            if name in scores:
-                st.metric("Score /100", f"{scores[name]:.1f}")
+                if name == "Croissance du PIB":
 
-            trend = get_indicator_trend(name, df)
+                    quarter = (
+                        (latest["Date"].month - 1) // 3 + 1
+                    )
 
-            if trend is not None:
-                variation, status = trend
+                    date = (
+                        f"T{quarter} {latest['Date'].year}"
+                    )
 
-                if name in ["Croissance du PIB", "Inflation", "Chômage"]:
-                    variation_text = f"{variation:+.2f} point(s)"
                 else:
-                    variation_text = f"{variation:+.2f}"
 
-                if status == "Amélioration":
-                    st.success(f"↑ {variation_text} — Amélioration")
-                elif status == "Dégradation":
-                    st.error(f"↓ {variation_text} — Dégradation")
+                    date = latest["Date"].strftime(
+                        "%d/%m/%Y"
+                    )
+
+                if name in [
+                    "Croissance du PIB",
+                    "Inflation",
+                    "Chômage"
+                ]:
+
+                    formatted = f"{value:.2f}%"
+
                 else:
-                    st.info(f"→ Stable ({variation_text})")
 
-            st.caption(f"Observation : {date}")
+                    formatted = f"{value:,.2f}"
 
+                st.metric(
+                    "Dernière valeur",
+                    formatted
+                )
+
+                if name in scores:
+
+                    st.metric(
+                        "Score /100",
+                        f"{scores[name]:.1f}"
+                    )
+
+                trend = get_indicator_trend(
+                    name,
+                    clean_df
+                )
+
+                if trend is not None:
+
+                    variation, status = trend
+
+                    if name in [
+                        "Croissance du PIB",
+                        "Inflation",
+                        "Chômage"
+                    ]:
+
+                        variation_text = (
+                            f"{variation:+.2f} point(s)"
+                        )
+
+                    else:
+
+                        variation_text = (
+                            f"{variation:+.2f}"
+                        )
+
+                    if status == "Amélioration":
+
+                        st.success(
+                            f"↑ {variation_text} — Amélioration"
+                        )
+
+                    elif status == "Dégradation":
+
+                        st.error(
+                            f"↓ {variation_text} — Dégradation"
+                        )
+
+                    else:
+
+                        st.info(
+                            f"→ Stable ({variation_text})"
+                        )
+
+                st.caption(
+                    f"Observation : {date}"
+                )
+
+            else:
+
+                st.warning("Donnée indisponible")
 
         else:
 
             st.warning("Donnée indisponible")
+
 
 # ==========================================
 # HISTORIQUE DU SCORE GLOBAL
 # ==========================================
 
 st.divider()
-st.subheader("Évolution historique du score global")
+
+st.subheader(
+    "Évolution historique du score global"
+)
 
 if global_score is not None:
 
-    historical_data = calculate_historical_global_score(
-        data,
-        selected,
-        weights
-    )
+    try:
 
-    if historical_data is not None and not historical_data.empty:
-
-        historical_fig = px.line(
-            historical_data,
-            x="Date",
-            y="Score global",
-            title="Évolution du baromètre économique"
+        historical_data = calculate_historical_global_score(
+            data,
+            selected,
+            weights
         )
 
-        historical_fig.update_traces(
-            line=dict(color="#2563EB", width=3),
-            hovertemplate=(
-                "<b>Date :</b> %{x|%d/%m/%Y}<br>"
-                "<b>Score :</b> %{y:.1f}/100"
-                "<extra></extra>"
+        if (
+            historical_data is not None
+            and not historical_data.empty
+        ):
+
+            historical_fig = px.line(
+                historical_data,
+                x="Date",
+                y="Score global",
+                title="Évolution du baromètre économique"
             )
-        )
 
-        historical_fig.add_hline(
-            y=70,
-            line_dash="dash",
-            line_color="#16A34A",
-            annotation_text="Situation favorable"
-        )
+            historical_fig.update_traces(
+                line=dict(
+                    color="#2563EB",
+                    width=3
+                ),
+                hovertemplate=(
+                    "<b>Date :</b> %{x|%d/%m/%Y}<br>"
+                    "<b>Score :</b> %{y:.1f}/100"
+                    "<extra></extra>"
+                )
+            )
 
-        historical_fig.add_hline(
-            y=40,
-            line_dash="dash",
-            line_color="#D97706",
-            annotation_text="Seuil de situation modérée"
-        )
+            historical_fig.add_hline(
+                y=70,
+                line_dash="dash",
+                line_color="#16A34A",
+                annotation_text="Situation favorable"
+            )
 
-        historical_fig.update_layout(
-            yaxis=dict(
-                title="Score global /100",
-                range=[0, 100]
-            ),
-            xaxis_title="Date",
-            plot_bgcolor="white",
-            paper_bgcolor="white",
-            hovermode="x unified",
-            height=450
-        )
+            historical_fig.add_hline(
+                y=40,
+                line_dash="dash",
+                line_color="#D97706",
+                annotation_text="Seuil de situation modérée"
+            )
 
-        st.plotly_chart(
-            historical_fig,
-            use_container_width=True
-        )
+            historical_fig.update_layout(
+                yaxis=dict(
+                    title="Score global /100",
+                    range=[0, 100]
+                ),
+                xaxis_title="Date",
+                plot_bgcolor="white",
+                paper_bgcolor="white",
+                hovermode="x unified",
+                height=450
+            )
 
-    else:
-        st.info(
-            "Les données historiques sont insuffisantes "
-            "pour calculer un score global."
+            st.plotly_chart(
+                historical_fig,
+                use_container_width=True
+            )
+
+        else:
+
+            st.info(
+                "Les données historiques sont insuffisantes "
+                "pour calculer un score global."
+            )
+
+    except Exception as error:
+
+        st.error(
+            "Une erreur est survenue lors du calcul "
+            f"de l'historique : {error}"
         )
 
 else:
+
     st.info(
         "Activez au moins un indicateur avec une pondération "
         "positive pour afficher l'historique."
     )
 
 
-
 # ==========================================
-# GRAPHIQUES HISTORIQUES
+# GRAPHIQUES HISTORIQUES INDIVIDUELS
 # ==========================================
 
 st.divider()
+
 st.subheader("Évolution historique")
 
 available_names = [
@@ -797,8 +991,23 @@ if available_names:
     )
 
     chosen_key = indicators[chosen]["key"]
+
     chart_data = data[chosen_key].copy()
-    # Filtre par année
+
+    chart_data["Date"] = pd.to_datetime(
+        chart_data["Date"],
+        errors="coerce"
+    )
+
+    chart_data["Value"] = pd.to_numeric(
+        chart_data["Value"],
+        errors="coerce"
+    )
+
+    chart_data = chart_data.dropna(
+        subset=["Date", "Value"]
+    )
+
     chart_data["Année"] = chart_data["Date"].dt.year
 
     available_years = sorted(
@@ -812,34 +1021,42 @@ if available_names:
     )
 
     if selected_year != "Toutes les années":
+
         chart_data = chart_data[
             chart_data["Année"] == selected_year
         ]
-    # Préparation des données
+
     chart_data = chart_data.sort_values("Date")
 
-    # Unité selon l'indicateur
-    if chosen in ["Croissance du PIB", "Inflation", "Chômage"]:
+    if chosen in [
+        "Croissance du PIB",
+        "Inflation",
+        "Chômage"
+    ]:
+
         y_title = "Valeur (%)"
+
         hover_template = (
             "<b>Date :</b> %{x|%d/%m/%Y}<br>"
             "<b>Valeur :</b> %{y:.2f}%"
             "<extra></extra>"
         )
+
     else:
+
         y_title = "Valeur de l'indice"
+
         hover_template = (
             "<b>Date :</b> %{x|%d/%m/%Y}<br>"
             "<b>Valeur :</b> %{y:,.2f}"
             "<extra></extra>"
         )
 
-    # Création du graphique
     fig = px.line(
         chart_data,
         x="Date",
         y="Value",
-        title=f"Évolution de {chosen}",
+        title=f"Évolution de {chosen}"
     )
 
     fig.update_traces(
@@ -861,7 +1078,10 @@ if available_names:
             size=12
         ),
         title=dict(
-            font=dict(size=18, color="#142B4A"),
+            font=dict(
+                size=18,
+                color="#142B4A"
+            ),
             x=0
         ),
         xaxis=dict(
@@ -880,7 +1100,12 @@ if available_names:
             tickfont=dict(color="#64748B")
         ),
         hovermode="x unified",
-        margin=dict(l=20, r=20, t=60, b=20),
+        margin=dict(
+            l=20,
+            r=20,
+            t=60,
+            b=20
+        ),
         height=420
     )
 
@@ -891,7 +1116,9 @@ if available_names:
 
 else:
 
-    st.warning("Aucune série historique disponible.")
+    st.warning(
+        "Aucune série historique disponible."
+    )
 
 
 # ==========================================
@@ -899,7 +1126,6 @@ else:
 # ==========================================
 
 st.divider()
-
 
 with st.expander("Comprendre la méthodologie de notation"):
 
@@ -928,7 +1154,7 @@ with st.expander("Comprendre la méthodologie de notation"):
     méthodologiques retenues pour construire ce baromètre.
     Le score ne constitue pas une prévision officielle de la conjoncture.
     """)
-    
+
 with st.expander("Sources des données"):
 
     st.markdown("""
