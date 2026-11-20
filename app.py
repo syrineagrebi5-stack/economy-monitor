@@ -470,6 +470,58 @@ if normalized_weights:
         use_container_width=True
     )
 
+def get_indicator_trend(name, df):
+
+    if df is None or len(df) < 2:
+        return None
+
+    history = df.copy()
+
+    history["Value"] = pd.to_numeric(
+        history["Value"], errors="coerce"
+    )
+
+    history = (
+        history.dropna(subset=["Value", "Date"])
+        .sort_values("Date")
+    )
+
+    if len(history) < 2:
+        return None
+
+    previous = float(history.iloc[-2]["Value"])
+    current = float(history.iloc[-1]["Value"])
+
+    variation = current - previous
+
+    if variation == 0:
+        status = "Stable"
+
+    elif name == "Inflation":
+        previous_distance = abs(previous - 2)
+        current_distance = abs(current - 2)
+
+        if current_distance < previous_distance:
+            status = "Amélioration"
+        elif current_distance > previous_distance:
+            status = "Dégradation"
+        else:
+            status = "Stable"
+
+    elif name in ["Croissance du PIB", "Euro Stoxx 50"]:
+        status = (
+            "Amélioration" if variation > 0
+            else "Dégradation"
+        )
+
+    else:
+        status = (
+            "Amélioration" if variation < 0
+            else "Dégradation"
+        )
+
+    return variation, status
+
 # ==========================================
 # CARTES DES CINQ INDICATEURS
 # ==========================================
@@ -529,10 +581,29 @@ for i, (name, info) in enumerate(indicators.items()):
 
             st.metric("Dernière valeur", formatted)
 
+
             if name in scores:
                 st.metric("Score /100", f"{scores[name]:.1f}")
 
+            trend = get_indicator_trend(name, df)
+
+            if trend is not None:
+                variation, status = trend
+
+                if name in ["Croissance du PIB", "Inflation", "Chômage"]:
+                    variation_text = f"{variation:+.2f} point(s)"
+                else:
+                    variation_text = f"{variation:+.2f}"
+
+                if status == "Amélioration":
+                    st.success(f"↑ {variation_text} — Amélioration")
+                elif status == "Dégradation":
+                    st.error(f"↓ {variation_text} — Dégradation")
+                else:
+                    st.info(f"→ Stable ({variation_text})")
+
             st.caption(f"Observation : {date}")
+
 
         else:
 
