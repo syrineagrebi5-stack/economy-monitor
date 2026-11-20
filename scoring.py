@@ -129,9 +129,10 @@ def calculate_scores(data):
         )
 
     if data.get("eurostoxx") is not None and not data["eurostoxx"].empty:
-        scores["Euro Stoxx 50"] = score_eurostoxx(
-            data["eurostoxx"]
-        )
+        eurostoxx_score = score_eurostoxx(data["eurostoxx"])
+
+        if eurostoxx_score is not None:
+            scores["Euro Stoxx 50"] = eurostoxx_score
 
     if data.get("vix") is not None and not data["vix"].empty:
         scores["VIX"] = score_vix(
