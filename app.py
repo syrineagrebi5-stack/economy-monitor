@@ -308,10 +308,14 @@ if global_score is not None and active_scores:
     st.markdown("### Interprétation économique du baromètre")
 
     # Identifier les indicateurs les plus faibles
-    weakest = sorted(
-        active_scores.items(),
-        key=lambda item: item[1]
-    )[:2]
+weakest = sorted(
+    [
+        (name, score)
+        for name, score in active_scores.items()
+        if name != "VIX"
+    ],
+    key=lambda item: item[1]
+)[:2]
 
     # Interprétation du score global
     if global_score >= 70:
