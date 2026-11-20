@@ -367,7 +367,11 @@ for i, (name, info) in enumerate(indicators.items()):
 
             latest = df.iloc[-1]
             value = float(latest["Value"])
-            date = latest["Date"].strftime("%d/%m/%Y")
+            if name == "Croissance du PIB":
+    quarter = (latest["Date"].month - 1) // 3 + 1
+    date = f"T{quarter} {latest['Date'].year}"
+else:
+    date = latest["Date"].strftime("%d/%m/%Y")
 
             if name in ["Croissance du PIB", "Inflation", "Chômage"]:
                 formatted = f"{value:.2f}%"
