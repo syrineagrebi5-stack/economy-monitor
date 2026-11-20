@@ -319,6 +319,7 @@ en investissement, ni un signal automatique d'achat ou de vente.
 # DETAIL DES INDICATEURS
 # ==========================================
 
+
 st.divider()
 
 if global_score is not None and active_scores:
@@ -390,23 +391,24 @@ if global_score is not None and active_scores:
 
         vix_score = active_scores["VIX"]
 
-if vix_score >= 70:
-    st.write(
-        "- VIX : volatilité anticipée relativement faible, "
-        "signal d'un environnement de marché plus serein."
-    )
-
-        elif score_vix >= 40:
+        if vix_score >= 70:
             st.write(
-                "- VIX : niveau de risque intermédiaire, "
-                "traduisant une certaine prudence des marchés."
+                "- VIX : volatilité anticipée relativement faible, "
+                "signal d'un environnement de marché plus serein."
+            )
+
+        elif vix_score >= 40:
+            st.write(
+                "- VIX : volatilité modérée, traduisant une certaine "
+                "incertitude sur les marchés."
             )
 
         else:
             st.write(
-                "- VIX : volatilité anticipée élevée, "
-                "signal d'une forte aversion au risque."
+                "- VIX : volatilité élevée, signalant une forte "
+                "nervosité des marchés."
             )
+
 
 
 # ==========================================
