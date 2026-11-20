@@ -303,47 +303,93 @@ else:
 
 st.divider()
 
+
 if global_score is not None and active_scores:
 
     st.markdown("### Interprétation économique du baromètre")
 
-    # Identifier les indicateurs les plus faibles
-weakest = sorted(
-    [
-        (name, score)
-        for name, score in active_scores.items()
-        if name != "VIX"
-    ],
-    key=lambda item: item[1]
-)[:2]
-
-    # Interprétation du score global
+    # Interprétation générale
     if global_score >= 70:
         interpretation = (
             "La situation économique et financière apparaît favorable. "
             "Les indicateurs sélectionnés traduisent globalement "
-            "un environnement plutôt positif."
+            "un environnement positif."
         )
     elif global_score >= 40:
         interpretation = (
             "La situation économique et financière apparaît modérée. "
-            "Certains indicateurs présentent des fragilités qui "
-            "méritent une attention particulière."
+            "Certains indicateurs présentent des fragilités "
+            "qui méritent une attention particulière."
         )
     else:
         interpretation = (
             "La situation économique et financière apparaît dégradée. "
-            "Les indicateurs sélectionnés signalent un environnement "
-            "globalement défavorable."
+            "Les indicateurs signalent un environnement défavorable."
         )
 
     st.write(interpretation)
 
-    # Mettre en évidence les deux indicateurs les plus faibles
-    st.markdown("**Principaux points de vigilance :**")
+    # Points de vigilance liés à l'économie réelle
+    macro_names = [
+        "Croissance du PIB",
+        "Inflation",
+        "Chômage"
+    ]
 
-    for name, score in weakest:
-        st.write(f"- {name} : {score:.1f}/100")
+    macro_scores = {
+        name: active_scores[name]
+        for name in macro_names
+        if name in active_scores
+    }
+
+    if macro_scores:
+        weakest = sorted(
+            macro_scores.items(),
+            key=lambda item: item[1]
+        )[:2]
+
+        st.markdown("**Points de vigilance macroéconomiques :**")
+
+        for name, score in weakest:
+            st.write(f"- {name} : {score:.1f}/100")
+
+    # Analyse distincte des marchés financiers
+    st.markdown("**Signaux des marchés financiers :**")
+
+    if "Euro Stoxx 50" in active_scores:
+        score_euro = active_scores["Euro Stoxx 50"]
+
+        if score_euro >= 70:
+            st.write(
+                "- Euro Stoxx 50 : dynamique boursière favorable."
+            )
+        elif score_euro >= 40:
+            st.write(
+                "- Euro Stoxx 50 : dynamique boursière modérée."
+            )
+        else:
+            st.write(
+                "- Euro Stoxx 50 : dynamique boursière défavorable."
+            )
+
+    if "VIX" in active_scores:
+        score_vix = active_scores["VIX"]
+
+        if score_vix >= 70:
+            st.write(
+                "- VIX : volatilité anticipée relativement faible, "
+                "signal d'un environnement de marché plus serein."
+            )
+        elif score_vix >= 40:
+            st.write(
+                "- VIX : niveau de risque intermédiaire, "
+                "traduisant une certaine prudence des marchés."
+            )
+        else:
+            st.write(
+                "- VIX : volatilité anticipée élevée, "
+                "signal d'une forte aversion au risque."
+            )
 
 st.subheader("Analyse des indicateurs")
 
