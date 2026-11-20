@@ -11,7 +11,15 @@ from data import (
     get_vix
 )
 
-from scoring import calculate_scores, calculate_global_score
+from scoring import (
+    calculate_scores,
+    calculate_global_score,
+    score_gdp,
+    score_inflation,
+    score_unemployment,
+    score_eurostoxx,
+    score_vix
+)
 
 
 # ==========================================
