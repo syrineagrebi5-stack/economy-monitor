@@ -1,0 +1,134 @@
+
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ECONOMY MONITOR</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.plot.ly/plotly-2.35.2.min.js"></script>
+</head>
+
+<body>
+
+<header class="header">
+    <div>
+        <p class="eyebrow">EURO AREA | ECONOMIC & FINANCIAL DASHBOARD</p>
+        <h1>ECONOMY MONITOR</h1>
+        <p class="subtitle">
+            Votre baromètre économique et financier personnalisable.
+        </p>
+    </div>
+
+    <button id="refresh-button" class="refresh-button">
+        ↻ Actualiser les données
+    </button>
+</header>
+
+<main>
+
+    <section class="global-card">
+        <div>
+            <p class="section-label">SCORE GLOBAL</p>
+            <div class="global-score">
+                <span id="global-score">--</span>
+                <small>/ 100</small>
+            </div>
+            <p id="global-status">Chargement des données...</p>
+        </div>
+
+        <div class="global-description">
+            <h2>Votre baromètre économique</h2>
+            <p>
+                Sélectionnez les indicateurs et ajustez leurs pondérations
+                pour construire votre propre score.
+            </p>
+            <p id="active-count">0 indicateur actif</p>
+        </div>
+    </section>
+
+    <section>
+        <div class="section-heading">
+            <div>
+                <p class="section-label">PERSONNALISATION</p>
+                <h2>Vos indicateurs</h2>
+            </div>
+        </div>
+
+        <div id="indicators" class="indicator-grid"></div>
+    </section>
+
+    <section>
+        <p class="section-label">ANALYSE</p>
+        <h2>Contribution au score global</h2>
+        <div id="contribution-chart" class="chart"></div>
+    </section>
+
+    <section>
+        <p class="section-label">ÉVOLUTION</p>
+        <h2>Historique des indicateurs</h2>
+
+        <div class="history-controls">
+            <select id="history-indicator">
+                <option value="Croissance du PIB">Croissance du PIB</option>
+                <option value="Inflation">Inflation</option>
+                <option value="Chômage">Chômage</option>
+                <option value="Euro Stoxx 50">Euro Stoxx 50</option>
+                <option value="VIX">VIX</option>
+            </select>
+        </div>
+
+        <div id="history-chart" class="chart"></div>
+    </section>
+
+    <section>
+        <p class="section-label">INTERPRÉTATION</p>
+        <h2>Analyse économique du baromètre</h2>
+        <div id="interpretation" class="interpretation">
+            En attente des données...
+        </div>
+    </section>
+
+    <section class="methodology">
+        <details>
+            <summary>Comprendre la méthodologie de notation</summary>
+            <p>
+                Chaque indicateur est transformé en un score compris
+                entre 0 et 100. Un score élevé traduit une situation
+                plus favorable.
+            </p>
+            <ul>
+                <li><strong>PIB :</strong> normalisation entre -2 % et +4 %.</li>
+                <li><strong>Inflation :</strong> score maximal autour de 2 %.</li>
+                <li><strong>Chômage :</strong> normalisation inversée entre 3 % et 12 %.</li>
+                <li><strong>Euro Stoxx 50 :</strong> performance sur 12 mois.</li>
+                <li><strong>VIX :</strong> normalisation inversée entre 10 et 40.</li>
+            </ul>
+            <p>
+                Le score global est une moyenne pondérée des indicateurs actifs.
+                Les pondérations sont automatiquement ajustées.
+            </p>
+        </details>
+
+        <details>
+            <summary>Sources des données</summary>
+            <p>
+                PIB, inflation et chômage : Eurostat.
+                <br>
+                Euro Stoxx 50 et VIX : Yahoo Finance.
+                <br>
+                Collecte automatique : Python, requests et yfinance.
+            </p>
+        </details>
+    </section>
+
+</main>
+
+<footer>
+    ECONOMY MONITOR · Baromètre économique et financier
+</footer>
+
+<script src="script.js"></script>
+
+</body>
+</html>
