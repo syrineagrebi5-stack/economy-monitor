@@ -214,7 +214,40 @@ if global_score is not None:
     col1, col2, col3 = st.columns(3)
 
     with col1:
-        st.metric("SCORE GLOBAL", f"{global_score:.1f}/100")
+        st.markdown("### Votre baromètre économique")
+
+if global_score >= 70:
+    appreciation = "Situation favorable"
+    couleur = "#16A34A"
+elif global_score >= 40:
+    appreciation = "Situation modérée"
+    couleur = "#D97706"
+else:
+    appreciation = "Situation dégradée"
+    couleur = "#DC2626"
+
+st.markdown(
+    f"""
+    <div style="
+        background-color: #F8FAFC;
+        padding: 25px;
+        border-radius: 15px;
+        text-align: center;
+        border: 1px solid #E2E8F0;
+    ">
+        <div style="font-size: 15px; color: #64748B;">
+            SCORE GLOBAL
+        </div>
+        <div style="font-size: 52px; font-weight: bold; color: {couleur};">
+            {global_score:.1f}<span style="font-size: 22px;">/100</span>
+        </div>
+        <div style="font-size: 18px; font-weight: 600; color: {couleur};">
+            {appreciation}
+        </div>
+    </div>
+    """,
+    unsafe_allow_html=True
+)
 
     with col2:
         st.metric("INDICATEURS ACTIFS", f"{len(active_scores)}/5")
