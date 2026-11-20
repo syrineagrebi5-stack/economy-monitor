@@ -354,7 +354,7 @@ for i, (name, info) in enumerate(indicators.items()):
                 <div style="
                     color: #64748B;
                     font-size: 12px;
-                    min-height: 45px;
+                    height: 75px;
                 ">
                     {info["description"]}
                 </div>
