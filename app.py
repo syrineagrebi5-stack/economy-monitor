@@ -271,13 +271,27 @@ for name, key in indicator_keys.items():
 
             latest = clean_export.iloc[-1]
 
+            raw_value = round(float(latest["Value"]), 2)
+
+            normalized_score = active_scores.get(name)
+            if normalized_score is not None:
+                normalized_score = round(float(normalized_score), 2)
+
+            weight = normalized_weights.get(name)
+            if weight is not None:
+                weight = round(float(weight), 2)
+
             export_rows.append({
                 "Indicateur": name,
-                "Date": latest["Date"].strftime("%Y-%m-%d"),
-                "Valeur brute": float(latest["Value"]),
-                "Score normalisé": active_scores.get(name),
-                "Poids (%)": normalized_weights.get(name),
-                "Score global": global_score
+                "Date": latest["Date"].strftime("%d/%m/%Y"),
+                "Valeur brute": raw_value,
+                "Score normalisé": normalized_score,
+                "Poids (%)": weight,
+                "Score global": (
+                    round(float(global_score), 2)
+                    if global_score is not None
+                    else None
+                )
             })
 
 if export_rows:
@@ -300,8 +314,6 @@ if export_rows:
 else:
 
     st.warning("Aucune donnée disponible pour l'export.")
-
-
 # ==========================================
 # AFFICHAGE DU SCORE GLOBAL
 # ==========================================
