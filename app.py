@@ -303,6 +303,44 @@ else:
 
 st.divider()
 
+if global_score is not None and active_scores:
+
+    st.markdown("### Interprétation économique du baromètre")
+
+    # Identifier les indicateurs les plus faibles
+    weakest = sorted(
+        active_scores.items(),
+        key=lambda item: item[1]
+    )[:2]
+
+    # Interprétation du score global
+    if global_score >= 70:
+        interpretation = (
+            "La situation économique et financière apparaît favorable. "
+            "Les indicateurs sélectionnés traduisent globalement "
+            "un environnement plutôt positif."
+        )
+    elif global_score >= 40:
+        interpretation = (
+            "La situation économique et financière apparaît modérée. "
+            "Certains indicateurs présentent des fragilités qui "
+            "méritent une attention particulière."
+        )
+    else:
+        interpretation = (
+            "La situation économique et financière apparaît dégradée. "
+            "Les indicateurs sélectionnés signalent un environnement "
+            "globalement défavorable."
+        )
+
+    st.write(interpretation)
+
+    # Mettre en évidence les deux indicateurs les plus faibles
+    st.markdown("**Principaux points de vigilance :**")
+
+    for name, score in weakest:
+        st.write(f"- {name} : {score:.1f}/100")
+
 st.subheader("Analyse des indicateurs")
 
 if normalized_weights:
