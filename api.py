@@ -11,7 +11,15 @@ from data import (
     get_vix
 )
 
-from scoring import calculate_scores, calculate_global_score
+from scoring import (
+    calculate_scores,
+    calculate_global_score,
+    score_gdp,
+    score_inflation,
+    score_unemployment,
+    score_eurostoxx,
+    score_vix
+)
 
 
 app = FastAPI(title="ECONOMY MONITOR API")
@@ -37,6 +45,7 @@ def dataframe_to_records(df):
         return []
 
     result = df.copy()
+
     result["Date"] = pd.to_datetime(
         result["Date"], errors="coerce"
     ).dt.strftime("%Y-%m-%d")
@@ -48,6 +57,99 @@ def dataframe_to_records(df):
     result = result.dropna(subset=["Date", "Value"])
 
     return result[["Date", "Value"]].to_dict("records")
+
+
+def latest_value(df, date):
+    if df is None or df.empty:
+        return None
+
+    history = df.copy()
+    history["Date"] = pd.to_datetime(
+        history["Date"], errors="coerce"
+    )
+    history["Value"] = pd.to_numeric(
+        history["Value"], errors="coerce"
+    )
+
+    history = history.dropna(subset=["Date", "Value"])
+    history = history[history["Date"] <= date]
+
+    if history.empty:
+        return None
+
+    return float(history.sort_values("Date").iloc[-1]["Value"])
+
+
+def calculate_historical_scores(data):
+    valid_dates = []
+
+    for df in data.values():
+        if df is not None and not df.empty:
+            dates = pd.to_datetime(df["Date"], errors="coerce").dropna()
+            if not dates.empty:
+                valid_dates.extend(dates.tolist())
+
+    if not valid_dates:
+        return []
+
+    first_date = min(valid_dates)
+    last_date = max(valid_dates)
+
+    months = pd.date_range(
+        start=first_date.to_period("M").to_timestamp(),
+        end=last_date,
+        freq="M"
+    )
+
+    history = []
+
+    for date in months:
+        values = {
+            name: latest_value(df, date)
+            for name, df in data.items()
+        }
+
+        scores = {}
+
+        if values["gdp"] is not None:
+            scores["Croissance du PIB"] = score_gdp(
+                values["gdp"]
+            )
+
+        if values["inflation"] is not None:
+            scores["Inflation"] = score_inflation(
+                values["inflation"]
+            )
+
+        if values["unemployment"] is not None:
+            scores["Chômage"] = score_unemployment(
+                values["unemployment"]
+            )
+
+        if data["eurostoxx"] is not None:
+            market_history = data["eurostoxx"].copy()
+            market_history["Date"] = pd.to_datetime(
+                market_history["Date"], errors="coerce"
+            )
+            market_history = market_history[
+                market_history["Date"] <= date
+            ]
+
+            euro_score = score_eurostoxx(market_history)
+
+            if euro_score is not None:
+                scores["Euro Stoxx 50"] = euro_score
+
+        if values["vix"] is not None:
+            scores["VIX"] = score_vix(values["vix"])
+
+        if scores:
+            history.append({
+                "Date": date.strftime("%Y-%m-%d"),
+                "scores": scores
+            })
+
+    return history
 
 
 @app.get("/")
@@ -90,10 +192,13 @@ def get_dashboard_data():
         if records:
             latest_values[name] = records[-1]
 
+    historical_scores = calculate_historical_scores(data)
+
     return {
         "global_score": global_score,
         "scores": scores,
         "weights": DEFAULT_WEIGHTS,
         "latest_values": latest_values,
-        "histories": histories
+        "histories": histories,
+        "historical_scores": historical_scores
     }
