@@ -154,8 +154,7 @@ indicators = {
         "weight": 15,
         "unit": "pts",
         "label": "VIX – Risque financier international",
-        "description": "Volatilité anticipée du marché américain : indicateur de l'aversion au risque et des tensions financières mondiales.",    }
-}
+        "description": "Volatilité anticipée du marché américain, révélatrice de l'aversion au risque.",}
 
 
 # ==========================================
