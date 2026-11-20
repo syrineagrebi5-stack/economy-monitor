@@ -631,9 +631,9 @@ def get_indicator_trend(name, df):
 # CALCUL DE L'HISTORIQUE DU SCORE GLOBAL
 # ==========================================
 
-def calculate_historical_global_score(data, selected, weights):
 
-    all_dates = []
+@st.cache_data(show_spinner=False)
+def calculate_historical_global_score(data, selected, weights):
 
     keys = [
         "gdp",
@@ -643,140 +643,128 @@ def calculate_historical_global_score(data, selected, weights):
         "vix"
     ]
 
-    # Récupération des dates
+    # ==========================================
+    # 1. PREPARATION DES DONNEES UNE SEULE FOIS
+    # ==========================================
+
+    prepared = {}
+    all_dates = set()
+
     for key in keys:
 
         df = data.get(key)
 
-        if df is not None and not df.empty:
+        if df is None or df.empty:
+            prepared[key] = None
+            continue
 
-            dates = pd.to_datetime(
-                df["Date"],
-                errors="coerce"
-            ).dropna()
+        history = df[["Date", "Value"]].copy()
 
-            all_dates.extend(dates.tolist())
+        history["Date"] = pd.to_datetime(
+            history["Date"],
+            errors="coerce"
+        )
+
+        history["Value"] = pd.to_numeric(
+            history["Value"],
+            errors="coerce"
+        )
+
+        history = history.dropna(
+            subset=["Date", "Value"]
+        ).sort_values("Date")
+
+        if history.empty:
+            prepared[key] = None
+            continue
+
+        date_index = pd.DatetimeIndex(history["Date"])
+        values = history["Value"].tolist()
+
+        prepared[key] = {
+            "dates": date_index,
+            "values": values
+        }
+
+        all_dates.update(date_index.tolist())
 
     if not all_dates:
         return None
 
-    dates = sorted(set(all_dates))
+    dates = sorted(all_dates)
+
+    # ==========================================
+    # 2. CALCUL DES SCORES HISTORIQUES
+    # ==========================================
 
     historical_scores = []
 
     for date in dates:
 
-        historical_data = {}
-
-        # Données disponibles à la date considérée
-        for key in keys:
-
-            df = data.get(key)
-
-            if df is None or df.empty:
-                historical_data[key] = None
-                continue
-
-            history = df.copy()
-
-            history["Date"] = pd.to_datetime(
-                history["Date"],
-                errors="coerce"
-            )
-
-            history["Value"] = pd.to_numeric(
-                history["Value"],
-                errors="coerce"
-            )
-
-            history = history.dropna(
-                subset=["Date", "Value"]
-            )
-
-            available = history[
-                history["Date"] <= date
-            ].sort_values("Date")
-
-            if available.empty:
-                historical_data[key] = None
-
-            else:
-                historical_data[key] = available.copy()
-
         scores = {}
 
-        # PIB
-        if selected.get("Croissance du PIB"):
+        for key in keys:
 
-            history = historical_data["gdp"]
+            if prepared[key] is None:
+                continue
 
-            if history is not None and not history.empty:
+            history_dates = prepared[key]["dates"]
+            values = prepared[key]["values"]
 
-                value = history["Value"].iloc[-1]
+            index = history_dates.searchsorted(
+                date,
+                side="right"
+            ) - 1
 
-                scores["Croissance du PIB"] = score_gdp(
-                    float(value)
-                )
+            if index < 0:
+                continue
 
-        # Inflation
-        if selected.get("Inflation"):
+            value = float(values[index])
 
-            history = historical_data["inflation"]
+            # PIB
+            if key == "gdp" and selected.get("Croissance du PIB"):
+                scores["Croissance du PIB"] = score_gdp(value)
 
-            if history is not None and not history.empty:
+            # Inflation
+            elif key == "inflation" and selected.get("Inflation"):
+                scores["Inflation"] = score_inflation(value)
 
-                value = history["Value"].iloc[-1]
+            # Chômage
+            elif key == "unemployment" and selected.get("Chômage"):
+                scores["Chômage"] = score_unemployment(value)
 
-                scores["Inflation"] = score_inflation(
-                    float(value)
-                )
+            # Euro Stoxx 50
+            elif key == "eurostoxx" and selected.get("Euro Stoxx 50"):
 
-        # Chômage
-        if selected.get("Chômage"):
+                target_date = history_dates[index] - pd.DateOffset(years=1)
 
-            history = historical_data["unemployment"]
+                past_index = history_dates.searchsorted(
+                    target_date,
+                    side="right"
+                ) - 1
 
-            if history is not None and not history.empty:
+                if past_index >= 0:
 
-                value = history["Value"].iloc[-1]
+                    past_value = float(values[past_index])
 
-                scores["Chômage"] = score_unemployment(
-                    float(value)
-                )
+                    if past_value > 0:
 
-        # Euro Stoxx 50
-        if selected.get("Euro Stoxx 50"):
+                        performance = (
+                            value / past_value - 1
+                        ) * 100
 
-            history = historical_data["eurostoxx"]
+                        euro_score = (performance + 20) / 40 * 100
 
-            if history is not None and not history.empty:
+                        scores["Euro Stoxx 50"] = max(
+                            0,
+                            min(100, euro_score)
+                        )
 
-                euro_score = score_eurostoxx(history)
+            # VIX
+            elif key == "vix" and selected.get("VIX"):
+                scores["VIX"] = score_vix(value)
 
-                if euro_score is not None:
-                    scores["Euro Stoxx 50"] = euro_score
-
-        # VIX
-        if selected.get("VIX"):
-
-            history = historical_data["vix"]
-
-            if history is not None and not history.empty:
-
-                vix_values = pd.to_numeric(
-                    history["Value"],
-                    errors="coerce"
-                ).dropna()
-
-                if not vix_values.empty:
-
-                    vix_value = float(
-                        vix_values.iloc[-1]
-                    )
-
-                    scores["VIX"] = score_vix(vix_value)
-
-        # Calcul du score global historique
+        # Calcul du score global
         historical_score = calculate_global_score(
             scores,
             weights
@@ -789,18 +777,18 @@ def calculate_historical_global_score(data, selected, weights):
                 "Score global": historical_score
             })
 
+    # ==========================================
+    # 3. CREATION DU DATAFRAME FINAL
+    # ==========================================
+
     if not historical_scores:
         return None
 
     result = pd.DataFrame(historical_scores)
 
-    result["Date"] = pd.to_datetime(
-        result["Date"]
-    )
+    result["Date"] = pd.to_datetime(result["Date"])
 
-    result = result.sort_values("Date")
-
-    return result
+    return result.sort_values("Date")
 
 
 # ==========================================
