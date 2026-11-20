@@ -118,7 +118,7 @@ indicators = {
         "key": "gdp",
         "weight": 25,
         "unit": "%",
-        "description": "Variation trimestrielle annualisée de référence"
+        "description": "Variation trimestrielle du PIB, corrigée des effets saisonniers"
     },
     "Inflation": {
         "key": "inflation",
@@ -142,7 +142,7 @@ indicators = {
         "key": "vix",
         "weight": 15,
         "unit": "pts",
-        "description": "Indice de volatilité anticipée des marchés américains"
+        "description": "Volatilité anticipée du marché américain : indicateur du risque international"
     }
 }
 
@@ -246,6 +246,7 @@ for i, (name, info) in enumerate(indicators.items()):
     with cards[i]:
 
         st.markdown(f"**{name}**")
+        st.caption(info["description"])
 
         if df is not None and not df.empty:
 
