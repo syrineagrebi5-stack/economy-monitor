@@ -295,7 +295,21 @@ else:
         "Sélectionnez au moins un indicateur et attribuez-lui "
         "une pondération supérieure à zéro."
     )
+# ==========================================
+# AVERTISSEMENT METHODOLOGIQUE
+# ==========================================
 
+st.warning("""
+⚠️ **À propos du score global**
+
+Le score global constitue un indicateur synthétique de
+l'environnement macroéconomique et financier. Il dépend
+des indicateurs retenus, des seuils de normalisation
+et des pondérations définies.
+
+Il ne constitue ni une prévision de marché, ni un conseil
+en investissement, ni un signal automatique d'achat ou de vente.
+""")
 
 # ==========================================
 # DETAIL DES INDICATEURS
