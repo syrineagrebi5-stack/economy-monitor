@@ -124,6 +124,7 @@ if loading_error:
 # CONFIGURATION DES INDICATEURS
 # ==========================================
 
+
 indicators = {
     "Croissance du PIB": {
         "key": "gdp",
@@ -154,8 +155,9 @@ indicators = {
         "weight": 15,
         "unit": "pts",
         "label": "VIX – Risque financier international",
-        "description": "Volatilité anticipée du marché américain, révélatrice de l'aversion au risque.",}
-
+        "description": "Volatilité anticipée du marché américain, révélatrice de l'aversion au risque"
+    }
+}
 
 # ==========================================
 # BARRE LATERALE : PERSONNALISATION
