@@ -146,22 +146,42 @@ def calculate_scores(data):
 # 8. SCORE GLOBAL PERSONNALISE
 # ==========================================
 
+
 def calculate_global_score(scores, weights):
 
-    active = {
-        name: weight
-        for name, weight in weights.items()
-        if name in scores and weight > 0
-    }
+    active = {}
+
+    for name, weight in weights.items():
+
+        if name not in scores:
+            continue
+
+        if weight <= 0:
+            continue
+
+        score = scores[name]
+
+        if score is None:
+            continue
+
+        if not 0 <= score <= 100:
+            continue
+
+        active[name] = {
+            "score": score,
+            "weight": weight
+        }
 
     if not active:
         return None
 
-    total_weight = sum(active.values())
+    total_weight = sum(
+        item["weight"] for item in active.values()
+    )
 
     global_score = sum(
-        scores[name] * weight
-        for name, weight in active.items()
+        item["score"] * item["weight"]
+        for item in active.values()
     ) / total_weight
 
     return round(global_score, 2)
