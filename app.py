@@ -391,6 +391,7 @@ for i, (name, info) in enumerate(indicators.items()):
             st.warning("Donnée indisponible")
 
 
+
 # ==========================================
 # GRAPHIQUES HISTORIQUES
 # ==========================================
@@ -414,21 +415,73 @@ if available_names:
     chosen_key = indicators[chosen]["key"]
     chart_data = data[chosen_key].copy()
 
+    # Préparation des données
+    chart_data = chart_data.sort_values("Date")
+
+    # Unité selon l'indicateur
+    if chosen in ["Croissance du PIB", "Inflation", "Chômage"]:
+        y_title = "Valeur (%)"
+        hover_template = (
+            "<b>Date :</b> %{x|%d/%m/%Y}<br>"
+            "<b>Valeur :</b> %{y:.2f}%"
+            "<extra></extra>"
+        )
+    else:
+        y_title = "Valeur de l'indice"
+        hover_template = (
+            "<b>Date :</b> %{x|%d/%m/%Y}<br>"
+            "<b>Valeur :</b> %{y:,.2f}"
+            "<extra></extra>"
+        )
+
+    # Création du graphique
     fig = px.line(
         chart_data,
         x="Date",
         y="Value",
         title=f"Évolution de {chosen}",
-        markers=False
+    )
+
+    fig.update_traces(
+        line=dict(
+            color="#2563EB",
+            width=3
+        ),
+        fill="tozeroy",
+        fillcolor="rgba(37, 99, 235, 0.08)",
+        hovertemplate=hover_template
     )
 
     fig.update_layout(
         plot_bgcolor="white",
         paper_bgcolor="white",
-        font_color="#142B4A",
-        xaxis_title="Date",
-        yaxis_title="Valeur",
-        hovermode="x unified"
+        font=dict(
+            family="Arial",
+            color="#142B4A",
+            size=12
+        ),
+        title=dict(
+            font=dict(size=18, color="#142B4A"),
+            x=0
+        ),
+        xaxis=dict(
+            title="Date",
+            showgrid=False,
+            showline=True,
+            linecolor="#CBD5E1",
+            tickfont=dict(color="#64748B")
+        ),
+        yaxis=dict(
+            title=y_title,
+            showgrid=True,
+            gridcolor="#E2E8F0",
+            zeroline=True,
+            zerolinecolor="#CBD5E1",
+            tickfont=dict(color="#64748B")
+        ),
+        hovermode="x unified",
+        margin=dict(l=20, r=20, t=60, b=20),
+        height=420
     )
 
     st.plotly_chart(
