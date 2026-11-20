@@ -388,13 +388,13 @@ if global_score is not None and active_scores:
 
     if "VIX" in active_scores:
 
-        score_vix = active_scores["VIX"]
+        vix_score = active_scores["VIX"]
 
-        if score_vix >= 70:
-            st.write(
-                "- VIX : volatilité anticipée relativement faible, "
-                "signal d'un environnement de marché plus serein."
-            )
+if vix_score >= 70:
+    st.write(
+        "- VIX : volatilité anticipée relativement faible, "
+        "signal d'un environnement de marché plus serein."
+    )
 
         elif score_vix >= 40:
             st.write(
